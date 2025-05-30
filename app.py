@@ -7,6 +7,26 @@ from datetime import datetime
 app = Flask(__name__)
 
 # === ROUTES ===
+@app.route("/submit-override", methods=["POST"])
+def submit_override():
+    data = request.get_json()
+    new_override = {
+        "Name": data["name"],
+        "Date": data["date"],
+        "Reason": data["reason"],
+        "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    }
+
+    file_path = "data/override_log.xlsx"
+
+    if os.path.exists(file_path):
+        df = pd.read_excel(file_path)
+        df = pd.concat([df, pd.DataFrame([new_override])], ignore_index=True)
+    else:
+        df = pd.DataFrame([new_override])
+
+    df.to_excel(file_path, index=False)
+    return jsonify({"message": "Override saved. Person marked as recalled."})
 
 @app.route("/")
 def index():
