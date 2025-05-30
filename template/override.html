@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Override Form (Recall)</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Recall Personnel (Override Leave)</h1>
+    <form id="overrideForm">
+      <label for="name">Name:</label>
+      <select id="name" name="name" required></select>
+
+      <label for="date">Date Recalled:</label>
+      <input type="date" id="date" name="date" required>
+
+      <label for="reason">Reason:</label>
+      <input type="text" id="reason" name="reason" required>
+
+      <button type="submit">Mark as Recalled</button>
+    </form>
+    <p id="status"></p>
+  </div>
+
+  <script>
+    // Auto-fill dropdown
+    fetch("/api/personnel")
+      .then(res => res.json())
+      .then(data => {
+        const dropdown = document.getElementById("name");
+        data.forEach(p => {
+          const opt = document.createElement("option");
+          opt.value = p.name;
+          opt.textContent = p.name;
+          dropdown.appendChild(opt);
+        });
+      });
+
+    document.getElementById("overrideForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const data = {
+        name: document.getElementById("name").value,
+        date: document.getElementById("date").value,
+        reason: document.getElementById("reason").value
+      };
+
+      const res = await fetch("/submit-override", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+
+      const result = await res.json();
+      document.getElementById("status").textContent = result.message;
+      document.getElementById("overrideForm").reset();
+    });
+  </script>
+</body>
+</html>
